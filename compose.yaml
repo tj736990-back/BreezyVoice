@@ -4,10 +4,15 @@ services:
     build: .
     ports:
       - "8080:8080"
+    environment:
+      - MODEL_PATH=/breezyvoice/models/BreezyVoice
+      - HF_HOME=/breezyvoice/.hf-cache
+      - PYTHONUTF8=1
     volumes:
-      - hf-cache:/root/.cache/huggingface/
+      - /home/beback46/models/BreezyVoice:/breezyvoice/models/BreezyVoice:ro
     command: api.py
     init: true
+    restart: unless-stopped
     deploy:
       resources:
         reservations:
@@ -15,5 +20,3 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-volumes:
-  hf-cache:

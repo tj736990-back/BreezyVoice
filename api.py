@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from io import BytesIO
 
 import torchaudio
+import soundfile as sf
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from g2pw import G2PWConverter
@@ -98,7 +99,10 @@ async def speach_endpoint(request: Request, payload: SpeechRequest):
         request.app.state.prompt_speech_16k,
     )
     audio_buffer = BytesIO()
-    torchaudio.save(audio_buffer, output["tts_speech"], 22050, format="wav")
+    audio_np = output["tts_speech"].detach().cpu().numpy()
+    if audio_np.ndim == 2 and audio_np.shape[0] == 1:
+        audio_np = audio_np[0]
+    sf.write(audio_buffer, audio_np, 22050, format="WAV")
     audio_buffer.seek(0)
     return StreamingResponse(
         audio_buffer,
